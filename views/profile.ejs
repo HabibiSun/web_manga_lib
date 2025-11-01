@@ -1,0 +1,31 @@
+<%- include('partials/header', { title: 'Профиль' }) %>
+
+<div class="container">
+    <h1>Мой профиль</h1>
+    <p>Добро пожаловать, <strong><%= user.username %></strong>!</p>
+
+    <h2 style="margin-top: 30px;">Избранная манга</h2>
+    <div class="manga-grid">
+        <% if (typeof favorites !== 'undefined' && favorites.length > 0) { %>
+            <% favorites.forEach(manga => { %>
+                <a href="/manga/<%= manga.id %>" class="manga-card">
+                    <img src="<%= manga.coverUrl %>" alt="Обложка <%= manga.title %>" class="manga-card__image">
+                    <div class="manga-card__content">
+                        <div class="manga-card__title"><%= manga.title %></div>
+                        <div class="manga-card__genres">
+                            <% if (manga.Genres && manga.Genres.length > 0) { %>
+                                <% manga.Genres.slice(0, 3).forEach(genre => { %>
+                                    <span class="genre-tag"><%= genre.name %></span>
+                                <% }) %>
+                            <% } %>
+                        </div>
+                    </div>
+                </a>
+            <% }) %>
+        <% } else { %>
+            <p>Вы еще не добавили ни одной манги в избранное.</p>
+        <% } %>
+    </div>
+</div>
+
+<%- include('partials/footer') %>

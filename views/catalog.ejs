@@ -1,0 +1,78 @@
+<%- include('partials/header', { title: 'Каталог' }) %>
+
+<div class="container">
+    <h1>Каталог манги</h1>
+
+    <!-- БЛОК ПОИСКА -->
+    <div class="catalog-search-bar">
+        <form action="/catalog" method="GET">
+            <input type="search" name="search" placeholder="Поиск по названию..." value="<%= currentSearch %>">
+            <button type="submit" class="btn btn--primary">Найти</button>
+        </form>
+    </div>
+
+    <div class="catalog-layout">
+        <aside class="filters-sidebar">
+            <h3>Фильтры и сортировка</h3>
+            <form action="/catalog" method="GET">
+
+                <!-- Фильтр по жанру -->
+                <div class="filter-group">
+                    <label for="genre">Жанр</label>
+                    <select id="genre" name="genre">
+                        <option value="">Все жанры</option>
+                        <% if (typeof genres !== 'undefined' && genres.length > 0) { %>
+                            <% genres.forEach(genre => { %>
+                                <option value="<%= genre.id %>" <%= currentGenre == genre.id ? 'selected' : '' %>>
+                                    <%= genre.name %>
+                                </option>
+                            <% }) %>
+                        <% } %>
+                    </select>
+                </div>
+
+                <!-- Сортировка -->
+                <div class="filter-group">
+                    <label for="sort">Сортировать по</label>
+                    <select id="sort" name="sort">
+                        <!-- Фильтры -->
+                        <option value="title_asc" <%= currentSort === 'title_asc' ? 'selected' : '' %>>Названию (А-Я)</option>
+                        <option value="title_desc" <%= currentSort === 'title_desc' ? 'selected' : '' %>>Названию (Я-А)</option>
+                        <option value="added_desc" <%= currentSort === 'added_desc' ? 'selected' : '' %>>Дате добавления (сначала новые)</option>
+                        <option value="added_asc" <%= currentSort === 'added_asc' ? 'selected' : '' %>>Дате добавления (сначала старые)</option>
+                        <option value="release_desc" <%= currentSort === 'release_desc' ? 'selected' : '' %>>Дате выхода (сначала новые)</option>
+                        <option value="release_asc" <%= currentSort === 'release_asc' ? 'selected' : '' %>>Дате выхода (сначала старые)</option>
+                    </select>
+                </div>
+
+                <button type="submit" class="btn btn--primary" style="width: 100%;">Применить</button>
+            </form>
+        </aside>
+
+        <div class="catalog-content">
+            <div class="manga-grid">
+                <% if (typeof mangas !== 'undefined' && mangas.length > 0) { %>
+                    <% mangas.forEach(manga => { %>
+                        <a href="/manga/<%= manga.id %>" class="manga-card">
+                            <img src="<%= manga.coverUrl %>" alt="Обложка <%= manga.title %>" class="manga-card__image">
+                            <div class="manga-card__content">
+                                <div class="manga-card__title"><%= manga.title %></div>
+                                <div class="manga-card__genres">
+                                    <% if (manga.Genres && manga.Genres.length > 0) { %>
+                                        <% manga.Genres.slice(0, 3).forEach(genre => { %>
+                                            <span class="genre-tag"><%= genre.name %></span>
+                                        <% }) %>
+                                    <% } %>
+                                </div>
+                            </div>
+                        </a>
+                    <% }) %>
+                <% } else { %>
+                    <p>По вашему запросу ничего не найдено.</p>
+                <% } %>
+            </div>
+        </div>
+    </div>
+</div>
+
+<%- include('partials/footer') %>

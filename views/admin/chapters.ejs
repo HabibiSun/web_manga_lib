@@ -1,0 +1,55 @@
+<%- include('../partials/header', { title: title }) %>
+
+<div class="container">
+    <div class="admin-header">
+        <h1>Управление главами для манги: <br><em><%= manga.title %></em></h1>
+        <a href="/admin/manga/<%= manga.id %>/add-chapter" class="btn btn--primary">Добавить новую главу</a>
+    </div>
+
+    <table class="admin-table">
+        <thead>
+        <tr>
+            <th>Номер главы</th>
+            <th>Название главы</th>
+            <th>Действия</th>
+        </tr>
+        </thead>
+        <tbody>
+        <% if (chapters && chapters.length > 0) { %>
+            <% chapters.forEach(chapter => { %>
+                <tr>
+                    <td>
+                        <a href="/manga/<%= manga.id %>/chapter/<%= chapter.id %>" class="admin-table-link">
+                            <%= chapter.chapterNumber%>
+                        </a>
+                    </td>
+                    <td>
+                        <a href="/manga/<%= manga.id %>/chapter/<%= chapter.id %>" class="admin-table-link">
+                            <%= chapter.title || 'Без названия' %>
+                        </a>
+                    </td>
+
+                    <td class="actions">
+                        <!-- Форма для удаления конкретной главы -->
+                        <form
+                                action="/admin/chapter/<%= chapter.id %>/delete"
+                                method="POST"
+                                style="display: inline;"
+                                class="delete-form"
+                                data-manga-title="Глава <%= chapter.chapterNumber %>"
+                        >
+                            <button type="submit" class="btn btn--danger">Удалить</button>
+                        </form>
+                    </td>
+                </tr>
+            <% }) %>
+        <% } else { %>
+            <tr>
+                <td colspan="3" style="text-align: center;">Для этой манги еще не добавлено ни одной главы.</td>
+            </tr>
+        <% } %>
+        </tbody>
+    </table>
+</div>
+
+<%- include('../partials/footer') %>

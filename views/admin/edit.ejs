@@ -1,0 +1,45 @@
+<%- include('../partials/header', { title: 'Редактировать мангу' }) %>
+<div class="container">
+    <div class="form-container" style="max-width: 700px;">
+        <h1>Редактирование манги</h1>
+        <form action="/admin/manga/<%= manga.id %>/edit" method="POST">
+            <div class="form-group">
+                <label for="title">Название</label>
+                <!-- Предзаполняем поле текущим значением -->
+                <input type="text" id="title" name="title" value="<%= manga.title %>" required>
+            </div>
+            <div class="form-group">
+                <label for="originalTitle">Оригинальное название</label>
+                <input type="text" id="originalTitle" name="originalTitle" value="<%= manga.originalTitle || '' %>">
+            </div>
+            <div class="form-group">
+                <label for="author">Автор</label>
+                <input type="text" id="author" name="author" value="<%= manga.author %>" required>
+            </div>
+            <div class="form-group">
+                <label for="releaseYear">Год выпуска</label>
+                <input type="number" id="releaseYear" name="releaseYear" placeholder="Например: 2018" value="<%= manga.releaseYear || '' %>">
+            </div>
+            <div class="form-group">
+                <label for="description">Описание</label>
+                <textarea id="description" name="description" rows="6" required><%= manga.description %></textarea>
+            </div>
+            <div class="form-group">
+                <label for="coverUrl">Путь к обложке</label>
+                <input type="text" id="coverUrl" name="coverUrl" value="<%= manga.coverUrl || '' %>" placeholder="Формат: /images/manga-folder/cover.jpg" required>
+            </div>
+            <div class="form-group">
+                <label for="status">Статус</label>
+                <select id="status" name="status">
+                    <option value="ongoing" <%= manga.status === 'ongoing' ? 'selected' : '' %>>Продолжается</option>
+                    <option value="completed" <%= manga.status === 'completed' ? 'selected' : '' %>>Завершен</option>
+                    <option value="frozen" <%= manga.status === 'frozen' ? 'selected' : '' %>>Заморожен</option>
+                    <option value="abandoned" <%= manga.status === 'abandoned' ? 'selected' : '' %>>Заброшен</option>
+                </select>
+            </div>
+            <button type="submit" class="btn btn--primary">Сохранить изменения</button>
+        </form>
+    </div>
+</div>
+
+<%- include('../partials/footer') %>

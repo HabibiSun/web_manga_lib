@@ -1,0 +1,34 @@
+<%- include('partials/header', { title: 'Главная страница' }) %>
+
+<div class="container">
+    <h1>Популярная манга</h1>
+    <div class="manga-grid">
+        <% /*
+           Ожидаем, что бэкенд передаст массив 'popularManga'
+           и для каждой манги в нем будет массив 'Genres'.
+        */ %>
+        <% if (typeof popularManga !== 'undefined' && popularManga.length > 0) { %>
+            <% popularManga.forEach(manga => { %>
+                <a href="/manga/<%= manga.id %>" class="manga-card">
+                    <img src="<%= manga.coverUrl %>" alt="Обложка <%= manga.title %>" class="manga-card__image">
+                    <div class="manga-card__content">
+                        <div class="manga-card__title"><%= manga.title %></div>
+
+
+                        <div class="manga-card__genres">
+                            <% if (manga.Genres && manga.Genres.length > 0) { %>
+                                <% manga.Genres.slice(0, 3).forEach(genre => { %>
+                                    <span class="genre-tag"><%= genre.name %></span>
+                                <% }) %>
+                            <% } %>
+                        </div>
+                    </div>
+                </a>
+            <% }) %>
+        <% } else { %>
+            <p>Не удалось загрузить популярную мангу.</p>
+        <% } %>
+    </div>
+</div>
+
+<%- include('partials/footer') %>

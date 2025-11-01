@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title><%= title %></title>
+    <!-- Стили -->
+    <!-- Для красивых форм подтверждения -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    <!-- Для красивых уведомлений -->
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+    <link rel="stylesheet" href="/css/style.css" />
+    <link rel="stylesheet" href="/css/nav.css" />
+    <link rel="stylesheet" href="/css/footer.css" />
+    <link rel="stylesheet" href="/css/form.css" />
+    <link rel="stylesheet" href="/css/manga.css" />
+    <link rel="stylesheet" href="/css/catalog.css" />
+    <link rel="stylesheet" href="/css/admin.css" />
+
+</head>
+<body>
+<!-- Навигация -->
+<nav class="nav">
+    <div class="nav__container">
+        <div class="nav__left">
+            <a href="/" class="nav__logo">MangaLib</a>
+            <a href="/" class="btn">Главная</a>
+            <a href="/catalog" class="btn">Каталог</a>
+        </div>
+        <div class="nav__right">
+            <% if (isAuthenticated) { %>
+                <% if (isAdmin) { %>
+                 <a href="/admin" class="btn">Админка</a>
+                <% } %>
+                <a href="/profile" class="btn">Профиль</a>
+                <a href="/logout" class="btn">Выйти</a>
+            <% } else { %>
+                <a href="/login" class="btn">Войти</a>
+                <a href="/register" class="btn btn--outline">Регистрация</a>
+            <% } %>
+        </div>
+    </div>
+</nav>
+<!-- Основной контент -->
+<main>

@@ -1,0 +1,58 @@
+<%- include('partials/header', { title: manga.title }) %>
+
+<div class="container">
+    <% /*
+     Ожидаем, что бэкенд передаст один объект 'manga' с полной информацией
+     и массив 'chapters', отсортированный по номеру.
+  */ %>
+    <div class="manga-details">
+        <div class="manga-details__cover">
+            <img src="<%= manga.coverUrl %>" alt="Обложка <%= manga.title %>">
+        </div>
+        <div class="manga-details__info">
+            <h1><%= manga.title %></h1>
+            <p><strong>Автор:</strong> <%= manga.author %></p>
+            <p><strong>Год выпуска:</strong> <%= manga.releaseYear %></p>
+            <div class="manga-details__genres">
+                <% if (manga.Genres && manga.Genres.length > 0) { %>
+                    <% manga.Genres.forEach(genre => { %>
+                        <span class="genre-tag"><%= genre.name %></span>
+                    <% }) %>
+                <% } %>
+            </div>
+            <p><strong>Статус:</strong>
+                <%= manga.status === 'ongoing'
+                        ? 'Выходит'
+                        : manga.status === 'completed'
+                                ? 'Завершено'
+                                : manga.status === 'frozen'
+                                    ? 'Заморожено'
+                                    : 'Заброшено' %>
+            </p>
+
+            <p><strong>Описание:</strong> <%= manga.description %></p>
+            <button
+                    id="favorite-btn"
+                    class="btn btn--primary"
+                    data-manga-id="<%= manga.id %>"
+                    data-is-favorite="<%= isFavorite ? 'true' : 'false' %>">
+                    <%= isFavorite ? 'В избранном' : 'Добавить в избранное' %>
+            </button>
+        </div>
+    </div>
+
+    <div class="chapters-list">
+        <h2>Главы</h2>
+        <% if (typeof chapters !== 'undefined' && chapters.length > 0) { %>
+            <% chapters.forEach(chapter => { %>
+                <a href="/manga/<%= manga.id %>/chapter/<%= chapter.id %>" class="chapter-item">
+                    Глава <%= chapter.chapterNumber %> <%= chapter.title ? `- ${chapter.title}` : '' %>
+                </a>
+            <% }) %>
+        <% } else { %>
+            <p>Для этой манги еще не добавлено ни одной главы.</p>
+        <% } %>
+    </div>
+</div>
+
+<%- include('partials/footer') %>

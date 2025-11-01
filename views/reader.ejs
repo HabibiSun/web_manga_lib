@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title><%= title %></title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+    <link rel="stylesheet" href="/css/style.css" />
+    <link rel="stylesheet" href="/css/footer.css" />
+    <link rel="stylesheet" href="/css/reader.css" />
+    <link rel="stylesheet" href="/css/reader-nav.css" />
+</head>
+<body>
+
+<%- include('partials/reader-nav', { title: title, manga: manga, chapter: chapter,
+previousChapter: previousChapter, nextChapter: nextChapter }) %>
+
+<main>
+    <div class="container">
+        <div class="reader-header-spacer"></div>
+
+        <button class="reader-sidebar-toggle" id="pages-toggle">☰</button>
+        <aside class="reader-sidebar" id="pages-sidebar">
+            <h3>Страницы</h3>
+            <nav>
+                <ul>
+                    <% if (chapter.pages && chapter.pages.length > 0) { %>
+                        <% chapter.pages.forEach(page => { %>
+                            <li>
+                                <a href="#page-<%= page.pageNumber %>" class="page-link">
+                                    Страница <%= page.pageNumber %>
+                                </a>
+                            </li>
+                        <% }) %>
+                    <% } %>
+                </ul>
+            </nav>
+        </aside>
+        <div class="reader-sidebar-overlay" id="pages-overlay"></div>
+
+        <aside class="reader-sidebar reader-sidebar--right" id="chapters-sidebar">
+            <h3>Главы</h3>
+            <nav>
+                <ul>
+                    <% if (allChapters && allChapters.length > 0) { %>
+                        <% allChapters.forEach(ch => { %>
+                            <li>
+                                <a href="/manga/<%= manga.id %>/chapter/<%= ch.id %>" class="chapter-link <%= ch.id == chapter.id ? 'active' : '' %>">
+                                    Глава <%= ch.chapterNumber %> <%= ch.title ? `- ${ch.title}` : '' %>
+                                    A</a>
+                            </li>
+                        <% }) %>
+                    <% } %>
+                </ul>
+            </nav>
+        </aside>
+        <div class="reader-sidebar-overlay" id="chapters-overlay"></div>
+
+        <div class="reader-content">
+            <% if (chapter.pages && chapter.pages.length > 0)
+            { %><% chapter.pages.forEach(page => { %><img src="<%= page.imageUrl %>" alt="Страница
+                <%= page.pageNumber %>" id="page-<%= page.pageNumber %>"><% }) %><%
+            }
+                else { %><p>Не удалось загрузить страницы главы.</p><% } %>
+        </div>
+
+        <div class="reader-navigation">
+            <% if (!nextChapter) { %><div class="reader-end-text">Вы прочитали последнюю главу!</div><% } %>
+            <div class="reader-navigation__buttons">
+                <% if (previousChapter) { %><a href="/manga/<%= manga.id %>/chapter/<%= previousChapter.id %>" class="btn btn--outline">← Глава <%= previousChapter.chapterNumber %></a><% } %>
+                <% if (nextChapter) { %><a href="/manga/<%= manga.id %>/chapter/<%= nextChapter.id %>" class="btn btn--outline">Глава <%= nextChapter.chapterNumber %> →</a><% } else { %><a href="/manga/<%= manga.id %>" class="btn btn--primary">Вернуться к манге</a><% } %>
+            </div>
+        </div>
+
+    </div>
+</main>
+<footer class="footer">
+    <div class="footer__container">
+    <span class="footer__copyright">
+        © 2025 MangaLib Project
+    </span>
+    </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+<script src="/js/reader.js"></script>
+
+</body>
+</html>
