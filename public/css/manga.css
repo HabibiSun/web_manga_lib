@@ -55,13 +55,12 @@
 }
 /* Контейнер для тегов жанров на странице манги */
 .manga-details__genres {
-    display: flex;       /* Выстраиваем теги в ряд */
-    flex-wrap: wrap;     /* Позволяем переноситься на новую строку */
-    gap: 8px;            /* Расстояние между тегами */
-    margin-bottom: 15px; /* Отступ снизу, чтобы отделить от описания */
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 15px;
 }
 
-/* Стиль для .genre-tag у нас уже должен быть, но на всякий случай, вот он: */
 .genre-tag {
     display: inline-block;
     padding: 3px 8px;
@@ -127,3 +126,40 @@
     margin-bottom: 5px;
 }
 
+@media (max-width: 426px) {
+
+    .manga-details {
+        flex-direction: column;
+        align-items: center;
+        gap: 20px;
+    }
+
+
+    .manga-details__cover img {
+        width: 100%;
+        max-width: 280px;
+    }
+
+
+    .manga-details__info {
+        text-align: center;
+    }
+
+
+    .manga-details__genres {
+        justify-content: center;
+    }
+
+    .manga-details__info h1 {
+        font-size: 1.8rem;
+    }
+
+    .manga-details__info p {
+        font-size: 0.95rem;
+    }
+
+    .chapter-item {
+        padding: 12px;
+        font-size: 0.9rem;
+    }
+}

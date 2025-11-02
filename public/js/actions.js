@@ -1,4 +1,4 @@
-
+// Добавление в избранное
 document.addEventListener('DOMContentLoaded', () => {
     const favoriteBtn = document.getElementById('favorite-btn');
 

@@ -5,6 +5,7 @@ const morgan = require('morgan');
 const flash = require('connect-flash');
 const SequelizeStore = require('connect-session-sequelize')(session.Store);
 const { sequelize, connectDB } = require('./db');
+const { Notification, Manga, User  } = require('./models');
 const db = require('./models');
 
 // Импортируем маршрутизаторы
@@ -39,7 +40,7 @@ app.use(
         saveUninitialized: false, // Не создавать сессию для анонимных пользователей
 
         cookie: {
-            maxAge: 24 * 60 * 60 * 1000, // Время жизни cookie (24 часа)
+            maxAge: 7 * 24 * 60 * 60 * 1000,
             httpOnly: true,
             secure: false
         }
@@ -52,10 +53,33 @@ app.use(flash());
 
 
 
-// Middleware, которое делает данные сессии доступными во всех шаблонах
-app.use((req, res, next) => {
+// Middleware, которое делает данные сессии и уведомления доступными во всех шаблонах доступными во всех шаблонах
+app.use(async (req, res, next) => {
     res.locals.isAuthenticated = req.session.isLoggedIn;
     res.locals.isAdmin = req.session.user ? req.session.user.isAdmin : false;
+
+    // Загружаем непрочитанные уведомления для залогиненного пользователя
+    if (req.session.isLoggedIn) {
+        const notifications = await Notification.findAll({
+            where: { UserId: req.session.user.id },
+            order: [['createdAt', 'DESC']],
+            include: {
+                model: Manga,
+                attributes: ['coverUrl'] // Нам нужна только обложка
+            }
+        });
+
+        // Разделяем на прочитанные и непрочитанные
+        const unreadNotifications = notifications.filter(n => !n.read);
+        const readNotifications = notifications.filter(n => n.read);
+
+        res.locals.unreadNotifications = unreadNotifications;
+        res.locals.readNotifications = readNotifications;
+        res.locals.unreadCount = unreadNotifications.length;
+    } else {
+        res.locals.unreadNotifications = [];
+        res.locals.unreadCount = 0;
+    }
 
     res.locals.success_msg = req.flash('success_msg');
     res.locals.error_msg = req.flash('error_msg');

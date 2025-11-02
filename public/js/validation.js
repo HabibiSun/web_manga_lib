@@ -1,4 +1,4 @@
-
+// валидация
 document.addEventListener('DOMContentLoaded', () => {
     const form = document.getElementById('register-form');
     const username = document.getElementById('username');

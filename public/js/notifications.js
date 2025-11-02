@@ -1,3 +1,4 @@
+// Toast успеха/провала
 document.addEventListener('DOMContentLoaded', () => {
     // Ищем на странице скрытый элемент с сообщением об успехе
     const successMessageElement = document.getElementById('success-msg');
@@ -22,7 +23,7 @@ document.addEventListener('DOMContentLoaded', () => {
             duration: 3000,
             close: true,
             gravity: "top",
-            position: "right",
+            position: "center",
             style: {
                 background: "linear-gradient(to right, #ff5f6d, #ffc371)",
             },

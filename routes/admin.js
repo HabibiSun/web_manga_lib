@@ -1,5 +1,5 @@
 const express = require('express');
-const { Manga, Genre ,Chapter } = require('../models');
+const { Manga, Chapter, User, Notification, Genre } = require('../models');
 const { Op } = require('sequelize');
 const router = express.Router();
 
@@ -221,67 +221,99 @@ router.get('/manga/:mangaId/add-chapter', async (req, res) => {
 // Обработка добавления главы
 router.post(
     '/manga/:mangaId/add-chapter',
-    // Используем multer.array() для приема до 100 файлов из поля с name="pages"
-    upload.array('pages', 100),
+    upload.array('pages', 250),
     async (req, res) => {
         const mangaId = req.params.mangaId;
         try {
             const { chapterNumber, chapterTitle } = req.body;
+            const chapterNumFloat = parseFloat(chapterNumber);
 
-            // Проверяем, что файлы были загружены
+            // Проверяем, что файлы вообще были загружены
             if (!req.files || req.files.length === 0) {
                 req.flash('old_input', req.body);
                 req.flash('error_msg', 'Необходимо загрузить хотя бы один файл страницы.');
                 return res.redirect(`/admin/manga/${mangaId}/add-chapter`);
             }
 
-            // Находим родительскую мангу, чтобы получить имя ее папки
-            const manga = await Manga.findByPk(mangaId);
+            // Проверяем номер главы на уникальность
+            const existingChapter = await Chapter.findOne({
+                where: {
+                    MangaId: mangaId,
+                    chapterNumber: chapterNumFloat
+                }
+            });
+
+            if (existingChapter) {
+                req.flash('old_input', req.body);
+                req.flash('error_msg', `Глава с номером ${chapterNumber} для этой манги уже существует.`);
+                // Если глава уже есть, удаляем ненужные загруженные файлы
+                await Promise.all(req.files.map(file => fs.unlink(file.path)));
+                return res.redirect(`/admin/manga/${mangaId}/add-chapter`);
+            }
+
+            // Находим родительскую мангу и пользователей для уведомлений
+            const manga = await Manga.findByPk(mangaId, {
+                include: {
+                    model: User,
+                    attributes: ['id']
+                }
+            });
+
             if (!manga) {
                 req.flash('error_msg', 'Родительская манга не найдена.');
+                await Promise.all(req.files.map(file => fs.unlink(file.path)));
                 return res.redirect('/admin');
             }
 
-            // Создаем пути и новую папку для главы
             const chapterFolderName = String(chapterNumber).replace('.', '-');
             const chapterDir = path.join(__dirname, '..', 'public', 'images', manga.folderName, 'chapters', chapterFolderName);
             await fs.ensureDir(chapterDir);
 
             const pageUrls = [];
-
-            // 4. Обрабатываем каждый загруженный файл в цикле
             for (let i = 0; i < req.files.length; i++) {
                 const file = req.files[i];
-                // Формируем новое имя файла: 01.jpg, 02.jpg и т.д.
                 const newFileName = `${String(i + 1).padStart(2, '0')}${path.extname(file.originalname)}`;
                 const targetPath = path.join(chapterDir, newFileName);
-
-                // Копируем файл из временной папки в целевую
                 await fs.copy(file.path, targetPath);
-
                 pageUrls.push(`/images/${manga.folderName}/chapters/${chapterFolderName}/${newFileName}`);
             }
 
-            // Удаляем все временные файлы
             await Promise.all(req.files.map(file => fs.unlink(file.path)));
-
-            // Превращаем массив URL в JSON для БД
             const pagesForDb = pageUrls.map((url, index) => ({ pageNumber: index + 1, imageUrl: url }));
 
-            // Создаем запись в базе данных
-            await Chapter.create({
-                chapterNumber: parseFloat(chapterNumber),
+            const newChapter = await Chapter.create({
+                chapterNumber: chapterNumFloat, // Используем сконвертированное число
                 title: chapterTitle,
                 pages: pagesForDb,
                 MangaId: mangaId
             });
+
+            // Блок создания уведомлений
+            if (manga.Users && manga.Users.length > 0) {
+                const userIds = manga.Users.map(user => user.id);
+
+                let notificationMessage = `Вышла новая глава ${newChapter.chapterNumber}`;
+                if (newChapter.title) {
+                    notificationMessage += ` - ${newChapter.title}`;
+                }
+                notificationMessage += ` манги "${manga.title}"`;
+
+                const notificationsToCreate = userIds.map(userId => ({
+                    message: notificationMessage,
+                    link: `/manga/${mangaId}/chapter/${newChapter.id}`,
+                    UserId: userId,
+                    MangaId: mangaId
+                }));
+
+                await Notification.bulkCreate(notificationsToCreate);
+                console.log(`Создано и отправлено ${notificationsToCreate.length} уведомлений о новой главе.`);
+            }
 
             req.flash('success_msg', `Глава ${chapterNumber} успешно добавлена!`);
             res.redirect(`/admin/manga/${mangaId}/chapters`);
 
         } catch (error) {
             console.error('Ошибка при добавлении главы с файлами:', error);
-            // Удаляем временные файлы, если они остались после ошибки
             if (req.files && req.files.length > 0) {
                 await Promise.all(req.files.map(file => fs.unlink(file.path)));
             }
@@ -318,44 +350,60 @@ router.post('/chapter/:chapterId/delete', async (req, res) => {
     }
 });
 
-router.post('/chapter/:chapterId/delete', async (req, res) => {
-    try {
-        const chapterId = req.params.chapterId;
-        const chapter = await Chapter.findByPk(chapterId);
-
-        if (!chapter) {
-            req.flash('error_msg', 'Глава не найдена.');
-            // Если не знаем куда, просто отправляем в админку
-            return res.redirect('/admin');
-        }
-
-        // Сохраняем ID родительской манги, чтобы знать, куда вернуться
-        const mangaId = chapter.MangaId;
-        await chapter.destroy();
-
-        req.flash('success_msg', 'Глава успешно удалена.');
-        // Возвращаем администратора на страницу управления главами для той же манги
-        res.redirect(`/admin/manga/${mangaId}/chapters`);
-
-    } catch (error) {
-        console.error('Ошибка при удалении главы:', error);
-        req.flash('error_msg', 'Произошла ошибка при удалении главы.');
-        res.redirect('/admin');
-    }
-});
 
 
 // Страница редактирования манги
 router.get('/manga/:mangaId/edit', async (req, res) => {
-    const manga = await Manga.findByPk(req.params.mangaId);
-    res.render('admin/edit', { title: 'Редактировать мангу', manga });
+    try {
+        const mangaId = req.params.mangaId;
+
+        const manga = await Manga.findByPk(mangaId, {
+            include: Genre
+        });
+
+        const allGenres = await Genre.findAll({ order: [['name', 'ASC']] });
+
+        if (!manga) {
+            req.flash('error_msg', 'Манга не найдена.');
+            return res.redirect('/admin');
+        }
+        res.render('admin/edit', {
+            title: 'Редактировать мангу',
+            manga,
+            allGenres
+        });
+    } catch (error) {
+        console.error('Ошибка при загрузке страницы редактирования:', error);
+        req.flash('error_msg', 'Произошла ошибка.');
+        res.redirect('/admin');
+    }
 });
 
 // Обработка редактирования манги
+
 router.post('/manga/:mangaId/edit', async (req, res) => {
-    const manga = await Manga.findByPk(req.params.mangaId);
-    await manga.update(req.body);
-    res.redirect('/admin');
+    try {
+        const manga = await Manga.findByPk(req.params.mangaId);
+        await manga.update({
+            title: req.body.title,
+            originalTitle: req.body.originalTitle,
+            author: req.body.author,
+            releaseYear: req.body.releaseYear,
+            description: req.body.description,
+            status: req.body.status
+        });
+
+        const { genres } = req.body;
+        await manga.setGenres(genres || []);
+
+        req.flash('success_msg', 'Изменения успешно сохранены.');
+        res.redirect('/admin');
+
+    } catch (error) {
+        console.error("Ошибка при обновлении манги:", error);
+        req.flash('error_msg', 'Произошла ошибка при сохранении изменений.');
+        res.redirect(`/admin/manga/${req.params.mangaId}/edit`);
+    }
 });
 
 module.exports = router;

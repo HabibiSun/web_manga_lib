@@ -1,5 +1,5 @@
 const express = require('express');
-const { Manga, Chapter, Genre, User } = require('../models');
+const { Manga, Chapter, Genre, User, Notification } = require('../models');
 const logger = require('../utils/logger');
 const { Op } = require('sequelize'); // Импортируем операторы для поиска
 
@@ -9,18 +9,22 @@ const router = express.Router();
 router.get('/', async (req, res) => {
     try {
         const popularManga = await Manga.findAll({
-            limit: 12,
+            limit: 15, // Ограничиваем количество результатов
+            order: [
+                ['createdAt', 'DESC'] // Сортируем по дате создания (сначала новые)
+            ],
             include: {
                 model: Genre,
                 through: { attributes: [] }
             }
         });
+
         res.render('index', {
             title: 'Главная страница',
             popularManga
         });
     } catch (error) {
-        console.error(error);
+        logger.error(`Ошибка при загрузке главной страницы: ${error.message}`);
         res.status(500).send('Ошибка сервера');
     }
 });
@@ -30,27 +34,33 @@ router.get('/catalog', async (req, res) => {
     try {
         const { search = '', genre = '', sort = 'added_desc' } = req.query;
 
-        // --- Подготовка опций для запроса в БД ---
+        const limit = 16;
+        let page = parseInt(req.query.page) || 1;
+        if (page < 1) page = 1;
+        const offset = (page - 1) * limit;
+
+        // Подготовка опций для запроса в БД
         const findOptions = {
+            limit,
+            offset,
             include: [{ model: Genre, through: { attributes: [] } }],
             where: {},
-            order: []
+            order: [],
+            distinct: true
         };
 
         if (search) {
-            findOptions.where = {
-                [Op.or]: [
+            findOptions.where = { [Op.or]: [
                     { title: { [Op.iLike]: `%${search}%` } },
                     { originalTitle: { [Op.iLike]: `%${search}%` } }
-                ]
-            };
+                ]};
         }
         if (genre) {
             // Sequelize требует специальный синтаксис для фильтрации по связанной модели
             findOptions.include[0].where = { id: genre };
         }
 
-        // --- Добавляем условия сортировки (ORDER) ---
+        // Добавляем условия сортировки
         switch (sort) {
             case 'title_asc':
                 findOptions.order.push(['title', 'ASC']);
@@ -73,17 +83,22 @@ router.get('/catalog', async (req, res) => {
                 break;
         }
 
-        // --- Выполняем запросы и рендерим страницу ---
-        const mangas = await Manga.findAll(findOptions);
+
+        const { count, rows } = await Manga.findAndCountAll(findOptions);
+        const totalPages = Math.ceil(count / limit);
         const allGenres = await Genre.findAll({ order: [['name', 'ASC']] });
 
         res.render('catalog', {
             title: 'Каталог',
-            mangas,
+            mangas: rows,
             genres: allGenres,
+
             currentSearch: search,
             currentGenre: genre,
-            currentSort: sort
+            currentSort: sort,
+
+            currentPage: page,
+            totalPages: totalPages
         });
     } catch (error) {
         logger.error(`Ошибка при загрузке каталога: ${error.message}`);
@@ -186,7 +201,7 @@ router.get('/profile', async (req, res) => {
             return res.redirect('/login');
         }
 
-        // Находим пользователя по ID из сессии и "подтягиваем" (include)
+        // Находим пользователя по ID из сессии и "подтягиваем"
         // всю связанную с ним мангу (это и есть избранное).
         // Также "подтягиваем" жанры для каждой манги.
         const userWithFavorites = await User.findByPk(req.session.user.id, {
@@ -224,7 +239,7 @@ router.post('/manga/:id/favorite', async (req, res) => {
         const mangaId = req.params.id;
         const userId = req.session.user.id;
 
-        // 2. Находим пользователя и мангу в базе данных
+        // Находим пользователя и мангу в базе данных
         const user = await User.findByPk(userId);
         const manga = await Manga.findByPk(mangaId);
 
@@ -232,7 +247,7 @@ router.post('/manga/:id/favorite', async (req, res) => {
             return res.status(404).json({ success: false, message: 'Пользователь или манга не найдены.' });
         }
 
-        // Используем специальный метод Sequelize "add<ModelName>" для создания связи
+
         // Sequelize автоматически предотвратит создание дубликатов в связующей таблице.
         await user.addManga(manga);
 
@@ -260,7 +275,6 @@ router.delete('/manga/:id/favorite', async (req, res) => {
             return res.status(404).json({ success: false, message: 'Пользователь или манга не найдены.' });
         }
 
-        // Sequelize предоставляет метод `remove<ModelName>` для удаления связи
         await user.removeManga(manga);
 
         logger.info(`Пользователь ${user.email} удалил из избранного мангу ID ${manga.id}`);
@@ -272,5 +286,56 @@ router.delete('/manga/:id/favorite', async (req, res) => {
     }
 });
 
+router.post('/notifications/mark-as-read', async (req, res) => {
+    try {
+        if (!req.session.isLoggedIn) {
+            return res.status(401).json({ success: false, message: 'Необходима авторизация.' });
+        }
+
+        const userId = req.session.user.id;
+
+        await Notification.update(
+            { read: true },
+            {
+                where: {
+                    UserId: userId,
+                    read: false
+                }
+            }
+        );
+
+        res.status(200).json({ success: true });
+
+    } catch (error) {
+        logger.error(`Ошибка при обновлении уведомлений: ${error.message}`);
+        res.status(500).json({ success: false, message: 'Ошибка сервера.' });
+    }
+});
+
+router.post('/notifications/clear', async (req, res) => {
+    try {
+        if (!req.session.isLoggedIn) {
+            return res.status(403).send('Необходима авторизация.');
+        }
+
+        const userId = req.session.user.id;
+
+        // Удаляем ВСЕ уведомления, где UserId совпадает с ID текущего пользователя
+        await Notification.destroy({
+            where: {
+                UserId: userId
+            }
+        });
+
+        req.flash('success_msg', 'Все уведомления были удалены.');
+        // Перенаправляем пользователя обратно на ту же страницу, где он был
+        res.redirect(req.header('Referer') || '/');
+
+    } catch (error) {
+        logger.error(`Ошибка при удалении уведомлений: ${error.message}`);
+        req.flash('error_msg', 'Не удалось удалить уведомления.');
+        res.redirect(req.header('Referer') || '/');
+    }
+});
 
 module.exports = router;

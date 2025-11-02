@@ -1,3 +1,4 @@
+// формы удаления
 document.addEventListener('DOMContentLoaded', () => {
     // Находим ВСЕ формы с классом .delete-form
     const deleteForms = document.querySelectorAll('.delete-form');

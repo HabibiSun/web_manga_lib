@@ -1,0 +1,121 @@
+
+.reader-nav {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 999;
+    background-color: #fff;
+
+    border-bottom: 1px solid var(--border-color);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    transition: transform 0.3s ease-in-out;
+}
+
+.reader-nav--hidden {
+    transform: translateY(-100%);
+}
+
+.reader-nav__container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+    height: 60px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.reader-nav__left, .reader-nav__right { flex: 1; }
+.reader-nav__right { text-align: right; }
+
+.reader-nav__center {
+    flex: 2;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
+}
+
+.reader-nav__title {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--primary-color);
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+.reader-nav__title:hover { color: var(--primary-color-dark); }
+
+.reader-nav__chapter {
+    font-size: 1.1rem;
+    color: var(--primary-color-dark);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: flex;
+    align-items: center;
+
+    text-decoration: none;
+    cursor: pointer;
+    border-radius: 8px;
+    padding: 0 10px;
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.reader-nav__chapter:hover {
+    background-color: var(--light-bg-color);
+    color: var(--primary-color);
+}
+
+.reader-nav__arrow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--primary-color);
+    text-decoration: none;
+    padding: 5px;
+    border-radius: 50%;
+    height: 40px;
+    width: 40px;
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+.reader-nav__arrow:hover {
+    background-color: #f0eafc;
+    color: var(--primary-color);
+}
+.reader-nav__arrow svg {
+    width: 20px;
+    height: 20px;
+}
+
+@media (max-width: 426px) {
+
+    .reader-nav__container {
+        padding: 0 10px;
+    }
+
+    .reader-nav__title {
+        font-size: 0.9rem;
+    }
+    .reader-nav__chapter {
+        max-width: 120px;
+    }
+
+    .reader-nav__arrow {
+        height: 36px;
+        width: 36px;
+        padding: 0;
+    }
+    .reader-nav__arrow svg {
+        width: 18px;
+        height: 18px;
+    }
+
+    .reader-nav__center {
+        gap: 8px;
+    }
+    .chapter-title-text {
+        display: none;
+    }
+}
+

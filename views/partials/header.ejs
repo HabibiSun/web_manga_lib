@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" href="/ico/logo.jpg" type="image/jpeg image/jpg">
     <title><%= title %></title>
     <!-- Стили -->
     <!-- Для красивых форм подтверждения -->
@@ -10,7 +11,7 @@
     <!-- Для красивых уведомлений -->
     <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
     <link rel="stylesheet" href="/css/style.css" />
-    <link rel="stylesheet" href="/css/nav.css" />
+    <link rel="stylesheet" href="/css/header.css" />
     <link rel="stylesheet" href="/css/footer.css" />
     <link rel="stylesheet" href="/css/form.css" />
     <link rel="stylesheet" href="/css/manga.css" />
@@ -22,22 +23,109 @@
 <!-- Навигация -->
 <nav class="nav">
     <div class="nav__container">
-        <div class="nav__left">
-            <a href="/" class="nav__logo">MangaLib</a>
-            <a href="/" class="btn">Главная</a>
-            <a href="/catalog" class="btn">Каталог</a>
-        </div>
-        <div class="nav__right">
-            <% if (isAuthenticated) { %>
-                <% if (isAdmin) { %>
-                 <a href="/admin" class="btn">Админка</a>
+
+        <a href="/" class="nav__logo">MangaLib</a>
+
+        <div class="nav__menu" id="nav-menu">
+            <div class="nav__left">
+                <a href="/" class="btn">Главная</a>
+                <a href="/catalog" class="btn">Каталог</a>
+            </div>
+            <div class="nav__right">
+                <% if (isAuthenticated) { %>
+                    <!-- Блок уведомлений -->
+                    <div class="notification-bell" id="notification-bell">
+                        <button class="notification-bell__btn">
+                            <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    width="24"
+                                    height="24"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    stroke-width="2"
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    class="feather feather-bell notification-icon"
+                            >
+                                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                                <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                            </svg>
+                        </button>
+                        <% if (unreadCount > 0) { %>
+                            <div class="unread-dot"></div>
+                        <% } %>
+
+                        <div class="notifications-dropdown" id="notifications-dropdown">
+                            <div class="notifications-dropdown__header">Уведомления</div>
+                            <div class="notifications-dropdown__content">
+                                <!-- Сначала непрочитанные -->
+                                <% if (unreadNotifications && unreadNotifications.length > 0) { %>
+                                    <% unreadNotifications.forEach(notification => { %>
+                                        <a href="<%= notification.link %>" class="notification-item notification-item--unread">
+                                            <div class="notification-item__image">
+                                                <% if (notification.Manga) { %>
+                                                    <img src="<%= notification.Manga.coverUrl %>" alt="Cover">
+                                                <% } else { %>
+                                                    <img src="/images/default-avatar.png" alt="Avatar">
+                                                <% } %>
+                                            </div>
+                                            <div class="notification-item__message">
+                                                <%= notification.message %>
+                                            </div>
+                                        </a>
+                                    <% }) %>
+                                <% } %>
+
+                                <!-- Затем прочитанные -->
+                                <% if (readNotifications && readNotifications.length > 0) { %>
+                                    <% readNotifications.forEach(notification => { %>
+                                        <a href="<%= notification.link %>" class="notification-item">
+                                            <div class="notification-item__image">
+                                                <% if (notification.Manga) { %>
+                                                    <img src="<%= notification.Manga.coverUrl %>" alt="Cover">
+                                                <% } else { %>
+                                                    <img src="/images/default-avatar.png" alt="Avatar">
+                                                <% } %>
+                                            </div>
+                                            <div class="notification-item__message">
+                                                <%= notification.message %>
+                                            </div>
+                                        </a>
+                                    <% }) %>
+                                <% } %>
+
+                                <!-- Если уведомлений вообще нет -->
+                                <% if ((!unreadNotifications || unreadNotifications.length === 0) && (!readNotifications || readNotifications.length === 0)) { %>
+                                    <div class="notification-item--empty">Уведомлений нет</div>
+                                <% } %>
+                            </div>
+                            <% if ((unreadNotifications && unreadNotifications.length > 0) || (readNotifications && readNotifications.length > 0)) { %>
+                                <div class="notifications-dropdown__footer">
+                                    <form action="/notifications/clear" method="POST" id="clear-notifications-form">
+                                        <button type="submit" class="clear-notifications-btn">Очистить все</button>
+                                    </form>
+                                </div>
+                            <% } %>
+                        </div>
+                    </div>
+                    <% if (isAdmin) { %>
+                        <a href="/admin" class="btn btn--danger">Админка</a>
+                    <% } %>
+                    <a href="/profile" class="btn">Профиль</a>
+                    <a href="/logout" class="btn">Выйти</a>
+                <% } else { %>
+                    <a href="/login" class="btn">Войти</a>
+                    <a href="/register" class="btn btn--outline">Регистрация</a>
                 <% } %>
-                <a href="/profile" class="btn">Профиль</a>
-                <a href="/logout" class="btn">Выйти</a>
-            <% } else { %>
-                <a href="/login" class="btn">Войти</a>
-                <a href="/register" class="btn btn--outline">Регистрация</a>
-            <% } %>
+            </div>
+        </div>
+
+        <!-- НОВАЯ КНОПКА "ГАМБУРГЕР" (видна только на мобильных) -->
+        <div class="hamburger-btn" id="hamburger-btn">
+            <span></span>
+            <span></span>
+            <span></span>
         </div>
     </div>
 </nav>

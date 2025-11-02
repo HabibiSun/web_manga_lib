@@ -3,16 +3,23 @@ const { sequelize } = require('../db');
 
 const Chapter = sequelize.define('Chapter', {
     chapterNumber: {
-        type: DataTypes.FLOAT, // Используем FLOAT для глав вроде 12.5
+        type: DataTypes.FLOAT,
         allowNull: false
     },
     title: {
         type: DataTypes.STRING
     },
     pages: {
-        type: DataTypes.JSONB, // Храним массив URL-адресов страниц в формате JSON
+        type: DataTypes.JSONB,
         allowNull: false
     }
+}, {
+    indexes: [
+        {
+            unique: true,
+            fields: ['MangaId', 'chapterNumber']
+        }
+    ]
 });
 
 module.exports = Chapter;

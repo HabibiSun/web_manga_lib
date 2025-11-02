@@ -105,7 +105,7 @@
     white-space: nowrap;
 }
 .checkbox-item label:hover {
-    background-color: #f0eafc;
+    background-color: var(--light-bg-color);
     border-color: var(--primary-color);
 }
 .checkbox-item input[type="checkbox"]:checked + label {

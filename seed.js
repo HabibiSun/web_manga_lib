@@ -1,6 +1,4 @@
-const { sequelize, Manga, Genre } = require('./models');
-
-// --- 1. ДАННЫЕ ДЛЯ ЗАПОЛНЕНИЯ ---
+const { sequelize, Manga, Genre, User, Notification } = require('./models');
 
 const genresData = [
     { name: 'Экшен' }, { name: 'Приключения' }, { name: 'Комедия' }, { name: 'Драма' },
@@ -152,6 +150,25 @@ const seedDatabase = async () => {
             console.log(`Создана манга: "${newManga.title}" с обложкой по пути ${coverPath}`);
         }
 
+        console.log('Создание тестового пользователя...');
+        const hashPassword = await require('bcryptjs').hash('Password123', 10);
+        const testUser = await User.create({
+            username: 'TestUser',
+            email: 'test@test.com',
+            password: hashPassword,
+            isAdmin: true
+        });
+
+        console.log('Создание тестовых уведомлений...');
+        await Notification.bulkCreate([
+            { message: 'Вышла новая глава манги "Атака Титанов"!', link: '/manga/1', UserId: testUser.id, MangaId: 1 },
+            { message: 'Вышла новая глава манги "Атака Титанов"!', link: '/manga/1', UserId: testUser.id, MangaId: 1 },
+            { message: 'Вышла новая глава манги "Атака Титанов"!', link: '/manga/1', UserId: testUser.id, MangaId: 1 },
+            { message: 'Вышла новая глава манги "Атака Титанов"!', link: '/manga/1', UserId: testUser.id, MangaId: 1 },
+            { message: 'Вышла новая глава манги "Атака Титанов"!', link: '/manga/1', UserId: testUser.id, MangaId: 1 },
+            { message: 'Вышла новая глава манги "Атака Титанов"!', link: '/manga/1', UserId: testUser.id, MangaId: 1 },// MangaId: 1
+        ]);
+        console.log('Тестовые уведомления созданы.');
         console.log('\nБаза данных успешно заполнена начальными данными!');
 
     } catch (error) {

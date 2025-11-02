@@ -82,3 +82,40 @@
     outline: none;
     border-color: var(--primary-color);
 }
+
+.pagination {
+    margin-top: 30px;
+    display: flex;
+    justify-content: center;
+}
+
+.pagination ul {
+    display: flex;
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+    gap: 5px;
+}
+
+.pagination a {
+    display: block;
+    padding: 8px 15px;
+    text-decoration: none;
+    color: var(--primary-color);
+    background-color: #fff;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.pagination a:hover {
+    background-color: var(--light-bg-color);
+}
+
+/* Стиль для активной (текущей) страницы */
+.pagination li.active a {
+    background-color: var(--primary-color);
+    color: #fff;
+    border-color: var(--primary-color);
+    cursor: default;
+}

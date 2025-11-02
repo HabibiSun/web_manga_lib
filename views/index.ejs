@@ -3,10 +3,6 @@
 <div class="container">
     <h1>Популярная манга</h1>
     <div class="manga-grid">
-        <% /*
-           Ожидаем, что бэкенд передаст массив 'popularManga'
-           и для каждой манги в нем будет массив 'Genres'.
-        */ %>
         <% if (typeof popularManga !== 'undefined' && popularManga.length > 0) { %>
             <% popularManga.forEach(manga => { %>
                 <a href="/manga/<%= manga.id %>" class="manga-card">

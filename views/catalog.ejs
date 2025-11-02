@@ -3,7 +3,6 @@
 <div class="container">
     <h1>Каталог манги</h1>
 
-    <!-- БЛОК ПОИСКА -->
     <div class="catalog-search-bar">
         <form action="/catalog" method="GET">
             <input type="search" name="search" placeholder="Поиск по названию..." value="<%= currentSearch %>">
@@ -73,6 +72,19 @@
             </div>
         </div>
     </div>
+    <% if (totalPages > 1) { %>
+        <nav class="pagination">
+            <ul>
+                <% for (let i = 1; i <= totalPages; i++) { %>
+                    <li class="<%= (i === currentPage) ? 'active' : '' %>">
+                        <a href="/catalog?page=<%= i %><% if (currentSearch) { %>&search=<%= currentSearch %><% } %><% if (currentGenre) { %>&genre=<%= currentGenre %><% } %><% if (currentSort) { %>&sort=<%= currentSort %><% } %>">
+                            <%= i %>
+                        </a>
+                    </li>
+                <% } %>
+            </ul>
+        </nav>
+    <% } %>
 </div>
 
 <%- include('partials/footer') %>

@@ -2,7 +2,7 @@
     max-width: 500px;
     margin: 40px auto;
     padding: 30px;
-    background-color: #fff;
+    background-color: var(--light-bg-color);
     border-radius: 8px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     color: var(--primary-color);
@@ -57,8 +57,8 @@
 }
 
 .form-group input.invalid {
-    border-color: #dc3545;
-    background-color: #fff6f6;
+    border-color: red;
+    background-color: var(--light-bg-color);
 }
 
 .form-group-checkbox {

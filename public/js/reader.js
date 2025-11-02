@@ -1,4 +1,4 @@
-// public/js/reader.js
+// Скролы и меню чтения
 
 document.addEventListener('DOMContentLoaded', () => {
 

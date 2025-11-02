@@ -50,7 +50,6 @@
                                         name="genres"
                                         id="genre-<%= genre.id %>"
                                         value="<%= genre.id %>"
-                                        <% /* Проверяем, был ли этот жанр в предыдущем вводе */ %>
                                         <%= (oldInput.genres && oldInput.genres.includes(String(genre.id))) ? 'checked' : '' %>
                                 >
                                 <label for="genre-<%= genre.id %>"><%= genre.name %></label>

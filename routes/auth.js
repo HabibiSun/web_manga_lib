@@ -17,7 +17,7 @@ router.get('/register', (req, res) => {
 });
 
 const registerValidationRules = [
-    // Проверка имени пользователя (без изменений)
+    // Проверка имени пользователя
     body('username')
         .trim()
         .isLength({ min: 6, max: 30 })
@@ -98,7 +98,7 @@ router.post('/login', async (req, res, next) => { // Добавили 'next' д�
                 // Устанавливаем долгий срок жизни cookie
                 req.session.cookie.maxAge = 7 * 24 * 60 * 60 * 1000;
             } else {
-                // Иначе cookie будет сессионным (удалится при закрытии браузера)
+                // Иначе cookie будет сессионным
                 req.session.cookie.expires = false;
             }
 
