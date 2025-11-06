@@ -34,13 +34,12 @@ app.use(express.static(path.join(__dirname, 'public')));
 const sessionStore = new SequelizeStore({ db: sequelize });
 app.use(
     session({
-        secret: 'a_very_secret_key_that_should_be_in_env_file',
+        secret: '123321',
         store: sessionStore,
         resave: false, // Не пересохранять сессию, если она не изменилась
         saveUninitialized: false, // Не создавать сессию для анонимных пользователей
 
         cookie: {
-            maxAge: 7 * 24 * 60 * 60 * 1000,
             httpOnly: true,
             secure: false
         }
@@ -96,7 +95,7 @@ const PORT = process.env.PORT || 3000;
 
 // Синхронизируем модели с БД и запускаем сервер
 db.sequelize.sync({ force: false }).then(() => {
-    app.listen(PORT, () => {
-        console.log(`Сервер запущен на http://localhost:${PORT}`);
+    app.listen(PORT, '127.0.0.1', () => {
+        console.log('Node.js приложение запущено и слушает порт 3000');
     });
 });

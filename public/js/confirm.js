@@ -13,7 +13,7 @@ document.addEventListener('DOMContentLoaded', () => {
             // Вызываем модальное окно SweetAlert2
             Swal.fire({
                 title: 'Вы уверены?',
-                text: `Вы действительно хотите удалить мангу «${mangaTitle}»? Это действие необратимо!`,
+                text: `Вы действительно хотите удалить «${mangaTitle}»? Это действие необратимо!`,
                 icon: 'warning',
                 showCancelButton: true,
                 confirmButtonColor: '#6f42c1',

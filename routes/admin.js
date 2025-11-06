@@ -5,7 +5,7 @@ const router = express.Router();
 
 const multer = require('multer');
 const path = require('path');
-const fs = require('fs-extra'); // Используем fs-extra
+const fs = require('fs-extra');
 
 const upload = multer({ dest: 'uploads/' });
 
@@ -282,7 +282,7 @@ router.post(
             const pagesForDb = pageUrls.map((url, index) => ({ pageNumber: index + 1, imageUrl: url }));
 
             const newChapter = await Chapter.create({
-                chapterNumber: chapterNumFloat, // Используем сконвертированное число
+                chapterNumber: chapterNumFloat,
                 title: chapterTitle,
                 pages: pagesForDb,
                 MangaId: mangaId
