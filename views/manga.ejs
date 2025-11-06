@@ -43,16 +43,31 @@
 
     <div class="chapters-list">
         <h2>Главы</h2>
-        <% if (typeof chapters !== 'undefined' && chapters.length > 0) { %>
+
+        <% const readed = (typeof readedChapters !== 'undefined') ? readedChapters : []; %>
+
+        <% if (chapters && chapters.length > 0) { %>
             <% chapters.forEach(chapter => { %>
                 <a href="/manga/<%= manga.id %>/chapter/<%= chapter.id %>" class="chapter-item">
-                    Глава <%= chapter.chapterNumber %> <%= chapter.title ? `- ${chapter.title}` : '' %>
+
+                    <div class="chapter-left">
+                        Глава <%= chapter.chapterNumber %>
+                        <%= chapter.title ? ` - ${chapter.title}` : '' %>
+                    </div>
+
+                    <div class="chapter-right">
+                        <% if (readed.includes(chapter.id)) { %>
+                            <span class="readed-label">Прочитано</span>
+                        <% } %>
+                    </div>
+
                 </a>
             <% }) %>
         <% } else { %>
             <p>Для этой манги еще не добавлено ни одной главы.</p>
         <% } %>
     </div>
+
 </div>
 
 <%- include('partials/footer') %>

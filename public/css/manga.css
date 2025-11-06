@@ -99,7 +99,8 @@
 }
 
 .chapter-item {
-    display: block;
+    display: flex;
+    justify-content: space-between;
     padding: 15px;
     background-color: #fff;
     border: 1px solid #ddd;
@@ -108,6 +109,15 @@
     text-decoration: none;
     color: #333;
     transition: background-color 0.2s;
+}
+
+.chapter-left {
+    font-weight: 500;
+}
+
+.chapter-right .readed-label {
+    color: #888;
+    font-size: 0.85em;
 }
 
 .chapter-item:hover {

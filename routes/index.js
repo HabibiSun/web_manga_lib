@@ -1,5 +1,5 @@
 const express = require('express');
-const { Manga, Chapter, Genre, User, Notification } = require('../models');
+const { Manga, Chapter, Genre, User, Notification, ReadedMangaChapter } = require('../models');
 const logger = require('../utils/logger');
 const { Op } = require('sequelize'); // Импортируем операторы для поиска
 
@@ -112,11 +112,10 @@ router.get('/manga/:id', async (req, res) => {
         const mangaId = req.params.id;
         let isFavorite = false;
 
-        // Теперь мы ищем мангу и сразу же включаем в запрос связанные с ней жанры
         const manga = await Manga.findByPk(mangaId, {
             include: {
                 model: Genre,
-                through: { attributes: [] } // Исключаем данные из связующей таблицы
+                through: { attributes: [] }
             }
         });
 
@@ -129,8 +128,22 @@ router.get('/manga/:id', async (req, res) => {
             order: [['chapterNumber', 'ASC']]
         });
 
+        let readedChapters = [];
+
         if (req.session.isLoggedIn) {
             const userId = req.session.user.id;
+
+            // получаем из БД все прочитанные главы этой манги
+            const readRows = await ReadedMangaChapter.findAll({
+                where: {
+                    userId,
+                    mangaId
+                }
+            });
+
+            // список ID глав
+            readedChapters = readRows.map(r => r.chapterId);
+
             const user = await User.findByPk(userId);
             if (user) {
                 isFavorite = await user.hasManga(manga);
@@ -141,8 +154,10 @@ router.get('/manga/:id', async (req, res) => {
             title: manga.title,
             manga,
             chapters,
-            isFavorite
+            isFavorite,
+            readedChapters
         });
+
     } catch (error) {
         logger.error(`Ошибка при загрузке страницы манги: ${error.message}`);
         res.status(500).send('Ошибка сервера');
@@ -178,6 +193,16 @@ router.get('/manga/:mangaId/chapter/:chapterId', async (req, res) => {
         const currentChapter = allChapters[currentIndex];
         const previousChapter = currentIndex > 0 ? allChapters[currentIndex - 1] : null;
         const nextChapter = currentIndex < allChapters.length - 1 ? allChapters[currentIndex + 1] : null;
+
+        if (req.session.isLoggedIn) {
+            await ReadedMangaChapter.findOrCreate({
+                where: {
+                    userId: req.session.user.id,
+                    mangaId,
+                    chapterId
+                }
+            });
+        }
 
         // Рендерим страницу, передавая в нее всю необходимую информацию
         res.render('reader', {

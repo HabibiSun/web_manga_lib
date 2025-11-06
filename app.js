@@ -5,7 +5,7 @@ const morgan = require('morgan');
 const flash = require('connect-flash');
 const SequelizeStore = require('connect-session-sequelize')(session.Store);
 const { sequelize, connectDB } = require('./db');
-const { Notification, Manga, User  } = require('./models');
+const { Notification, Manga  } = require('./models');
 const db = require('./models');
 
 // Импортируем маршрутизаторы
